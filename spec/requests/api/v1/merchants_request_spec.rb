@@ -10,24 +10,25 @@ describe "Merchants API" do
 
     merchants = JSON.parse(response.body, symbolize_names: true)
 
-    expect(merchants.count).to eq(3)
+    expect(merchants[:data].count).to eq(3)
 
-    merchants.each do |merchant|
-      expect(merchant).to have_key(:name)
-      expect(merchant[:name]).to be_a(String)
+    merchants[:data].each do |merchant|
+      expect(merchant[:attributes]).to have_key(:name)
+      expect(merchant[:attributes][:name]).to be_a(String)
     end 
   end
-
+  
   it "can get one merchant by its id" do
     id = create(:merchant).id
-
+    
     get "/api/v1/merchants/#{id}"
-
+    
     merchant = JSON.parse(response.body, symbolize_names: true)
-
+    # require 'pry'; binding.pry
+    
     expect(response).to be_successful
 
-    expect(merchant).to have_key(:name)
-    expect(merchant[:name]).to be_a(String)
+    expect(merchant[:data][:attributes]).to have_key(:name)
+    expect(merchant[:data][:attributes][:name]).to be_a(String)
   end
 end
