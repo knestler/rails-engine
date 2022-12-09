@@ -1,18 +1,22 @@
 class Api::V1::ItemsController < ApplicationController
 
   def index
-    render json: ItemSerializer.new(Item.all)
+    if params[:merchant_id] && Merchant.find(params[:merchant_id])
+      render json: ItemSerializer.new(Item.where(merchant_id: params[:merchant_id]))
+    else 
+      render json: ItemSerializer.new(Item.all)
+    end
   end
 
   def show
-    render json: ItemSerializer.new(Item.find(params[:id])) if Item.exists?(params[:id])
+      render json: ItemSerializer.new(Item.find(params[:id]))
   end
 
   def create
     if item_params.has_key?(:name) && item_params.has_key?(:description) && item_params.has_key?(:unit_price) && item_params.has_key?(:merchant_id)
-      render json: ItemSerializer.new(Item.create(item_params)), status: 201
+      render json: ItemSerializer.new(Item.create(item_params)), status: 201 
     else 
-      render json: {"errors": "Missing required parameters"}, status: 404
+      render json: {"Error": "Record not found"}, status: 404
     end
   end
 

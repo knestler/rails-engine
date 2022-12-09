@@ -4,6 +4,6 @@ class ApplicationController < ActionController::API
 
 private
   def render_404
-    render json: {"Error": "Record not found"}, status: :not_found
+    render json: {"Error": "Record not found"}, status: 404
   end
 end

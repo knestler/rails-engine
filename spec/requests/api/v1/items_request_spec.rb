@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 describe "Items API" do
-  it "sends a list of items" do
+  it "gets a list of items" do
     create_list(:item, 3)
 
     get '/api/v1/items'
@@ -60,7 +60,7 @@ describe "Items API" do
 
     post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
     created_item = Item.last
-    
+
     expect(response).to be_successful
     expect(created_item.name).to eq(item_params[:name])
     expect(created_item.description).to eq(item_params[:description])
@@ -126,5 +126,22 @@ describe "Items API" do
     expect(response).to be_successful
     expect(Item.count).to eq(0)
     expect{Item.find(item.id)}.to raise_error(ActiveRecord::RecordNotFound)
+  end
+
+  it 'can find merchant by id' do 
+    merchant1 = create(:merchant)
+    merchant2 = create(:merchant)
+    id = create(:item, merchant: merchant1).id
+
+    get "/api/v1/items/#{id}/merchant"
+
+    merchant = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response).to be_successful
+
+    expect(merchant).to have_key(:data)
+    expect(merchant[:data]).to have_key(:attributes)
+    expect(merchant[:data][:attributes]).to have_key(:name)
+    expect(merchant[:data][:attributes][:name]).to eq(merchant1.name)
   end
 end
