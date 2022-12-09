@@ -61,7 +61,6 @@ describe "Items API" do
     post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
     created_item = Item.last
     
-    # require 'pry'; binding.pry
     expect(response).to be_successful
     expect(created_item.name).to eq(item_params[:name])
     expect(created_item.description).to eq(item_params[:description])
@@ -69,24 +68,56 @@ describe "Items API" do
     expect(created_item.merchant_id).to eq(item_params[:merchant_id])
   end
 
-  it "can update an existing item" do
-    id = create(:item).id
-    previous_name = Item.last.name
-    item_params = { name: "jeans" }
+  it "can create a new item - sad path" do
+    id = create(:merchant).id
+    item_params = ({
+                    name: 'jeans',
+                    description: 'bottoms',
+                    # unit_price: 70.75,
+                    merchant_id: id,
+                  })
     headers = {"CONTENT_TYPE" => "application/json"}
 
-    # We include this header to make sure that these params are passed as JSON rather than as plain text
+    post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
+    created_item = Item.last
+    
+    expect(response.status).to eq 404
+
+  end
+
+  it 'can update an existing item' do
+    id = create(:item).id
+    previous_name = Item.last.name
+    item_params = { name: 'Jeans' }
+    headers = { "CONTENT_TYPE" => "application/json" }
+
     patch "/api/v1/items/#{id}", headers: headers, params: JSON.generate({item: item_params})
     item = Item.find_by(id: id)
 
     expect(response).to be_successful
     expect(item.name).to_not eq(previous_name)
-    expect(item.name).to eq("jeans")
+    expect(item.name).to eq('Jeans')
+  end
+
+  it "can update an existing item - sad path" do
+    m_id = create(:merchant, id: 1).id
+    id = create(:item, merchant_id: m_id).id
+    item_params = ({
+                    name: 'jeans',
+                    description: 'bottoms',
+                    unit_price: 70.75,
+                    merchant_id: 2,
+                  })
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    patch "/api/v1/items/#{id}", headers: headers, params: JSON.generate({item: item_params})
+
+    expect(response.status).to eq 404
   end
 
   it "can destroy an item" do
     item = create(:item)
-    # id = create(:item).id
 
     expect(Item.count).to eq(1)
 
